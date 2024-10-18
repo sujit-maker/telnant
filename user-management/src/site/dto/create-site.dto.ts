@@ -1,7 +1,6 @@
 import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateSiteDto {
-  @IsString()
   @IsNotEmpty()
   customerId: number; 
 

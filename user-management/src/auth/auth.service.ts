@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
@@ -25,32 +30,39 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { username: user.username, sub: user.id, usertype: user.usertype };
+    const payload = {
+      username: user.username,
+      sub: user.id,
+      usertype: user.usertype,
+    };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: '1h' }), 
       id: user.id,
       usertype: user.usertype,
     };
   }
 
-  
- // Change Password logic
- async changePassword(userId: number, newPassword: string, confirmPassword: string) {
-  if (newPassword !== confirmPassword) {
-    throw new BadRequestException('Passwords do not match');
+  // Change Password logic
+  async changePassword(
+    userId: number,
+    newPassword: string,
+    confirmPassword: string,
+  ) {
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Password updated successfully' };
   }
-
-  const user = await this.prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    throw new NotFoundException('User not found');
-  }
-
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await this.prisma.user.update({
-    where: { id: userId },
-    data: { password: hashedPassword },
-  });
-
-  return { message: 'Password updated successfully' };
 }
-}  

@@ -2,7 +2,11 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div> Welcome To Executive Dashboard</div>
+    <>
+    <div> 
+      <h1>Welcome To Executive Dashboard</h1>
+    </div>
+    </>
   )
 }
 

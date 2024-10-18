@@ -46,9 +46,8 @@ const LoginForm: React.FC = () => {
           <button
             type="submit"
             className={`w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={loading} // Disable button while loading
+            disabled={loading} 
           >
-            {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
       </div>

@@ -2,7 +2,6 @@ import { IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class UpdateSiteDto {
   @IsOptional()
-  @IsString()
   customerId?: number; 
 
   @IsOptional()
@@ -25,3 +24,5 @@ export class UpdateSiteDto {
   @IsEmail()
   contactEmail?: string;
 }
+
+

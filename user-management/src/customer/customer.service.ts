@@ -9,11 +9,11 @@ export class CustomerService {
 
   async create(data: CreateCustomerDto) {
     try {
-      // Ensure contactNumber is a string
+      
       return await this.prisma.customer.create({
         data: {
           ...data,
-          contactNumber: data.contactNumber.toString(), // Ensure contactNumber is a string
+          contactNumber: data.contactNumber.toString(), 
         },
       });
     } catch (error) {
@@ -48,12 +48,11 @@ export class CustomerService {
         throw new NotFoundException(`Customer with ID ${id} not found`);
       }
       
-      // Ensure contactNumber is a string
       return await this.prisma.customer.update({
         where: { id },
         data: {
           ...data,
-          contactNumber: data.contactNumber?.toString(), // Ensure contactNumber is a string
+          contactNumber: data.contactNumber?.toString(), 
         },
       });
     } catch (error) {

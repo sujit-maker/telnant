@@ -25,7 +25,6 @@ export class SiteService {
       throw new NotFoundException(`Customer with ID ${customerId} does not exist.`);
     }
 
-    // Create the site and associate it with the customer
     return this.prisma.site.create({
       data: {
         customer: {
@@ -40,13 +39,12 @@ export class SiteService {
     });
   }
 
-  // Fetch All Sites with Customer Names
   async findAll() {
     return this.prisma.site.findMany({
       include: {
         customer: {
           select: {
-            customerName: true,  // Only select the customerName from the Customer model
+            customerName: true,  
           },
         },
       },
@@ -60,13 +58,12 @@ export class SiteService {
       include: {
         customer: {
           select: {
-            customerName: true,  // Include the customerName when fetching the site
+            customerName: true, 
           },
         },
       },
     });
 
-    // Handle case where the site is not found
     if (!site) {
       throw new NotFoundException(`Site with ID ${id} not found.`);
     }
@@ -78,7 +75,6 @@ export class SiteService {
   async update(id: number, updateSiteDto: UpdateSiteDto) {
     const { customerId, siteName, siteAddress, contactName, contactNumber, contactEmail } = updateSiteDto;
 
-    // Check if the customer exists if customerId is provided
     if (customerId) {
       const customer = await this.prisma.customer.findUnique({
         where: { id: customerId },
@@ -89,7 +85,6 @@ export class SiteService {
       }
     }
 
-    // Update the site and connect to a new customer if customerId is provided
     return this.prisma.site.update({
       where: { id },
       data: {
@@ -102,7 +97,7 @@ export class SiteService {
           ? {
               connect: { id: customerId },
             }
-          : undefined, // Only connect customer if customerId is provided
+          : undefined, 
       },
     });
   }
@@ -111,14 +106,22 @@ export class SiteService {
   async remove(id: number) {
     const site = await this.prisma.site.findUnique({
       where: { id },
+      include: { tasks: true },  
     });
-
+  
     if (!site) {
       throw new NotFoundException(`Site with ID ${id} does not exist.`);
     }
-
+  
+    if (site.tasks.length > 0) {
+      await this.prisma.task.deleteMany({
+        where: { siteId: id },
+      });
+    }
+  
     return this.prisma.site.delete({
       where: { id },
     });
   }
+  
 }

@@ -9,6 +9,7 @@ import {
   InternalServerErrorException,
   BadRequestException,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,27 +17,144 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { User } from './user.decorator';
+import { UserType } from './user-type.enum'; // Adjust the path according to your project structure
+
+
+export interface User {
+  id: number;
+  username: string;
+  usertype: string;
+  adminId: number;
+}
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly authService: AuthService, // Inject AuthService
+    private readonly authService: AuthService,
   ) {}
 
   @Post('register')
-  async create(@Body() createUserDto: CreateUserDto) {
-    try {
-      return await this.userService.create(createUserDto);
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw new InternalServerErrorException('Failed to create user.');
+async create(@Body() createUserDto: CreateUserDto) {
+    const { usertype, managerId, adminId } = createUserDto;
+
+    // Validate usertype and dependencies
+    if (usertype === UserType.EXECUTIVE && !managerId) {
+        throw new BadRequestException('managerId is required for EXECUTIVE user type');
     }
+
+    try {
+        return await this.userService.createUser(createUserDto, managerId, adminId);
+    } catch (error) {
+        console.error('Error creating user:', error);
+        throw new InternalServerErrorException('Failed to create user');
+    }
+}
+
+
+@Post('exe')
+async createExecutive(
+    @Body() createExecutiveDto: CreateUserDto,
+    @User() user: any, // user should have the admin ID
+) {
+    // Add managerId and adminId to the DTO
+    createExecutiveDto.managerId = user.id; // assuming user.id is the managerId
+    const adminId = user.adminId; // Ensure this is correct
+    
+    console.log('Creating Executive:', { 
+        createExecutiveDto, 
+        managerId: createExecutiveDto.managerId, 
+        adminId 
+    });
+
+    try {
+        // Call service method with the necessary parameters
+        return await this.userService.createUser(
+            createExecutiveDto,
+            createExecutiveDto.managerId,
+            adminId,
+        );
+    } catch (error) {
+        console.error('Error creating executive:', error);
+        throw new InternalServerErrorException('Failed to create executive.');
+    }
+}
+
+
+@Get('managers')
+async findManagersByAdmin(@Query('adminId') adminId: string) {
+  const id = parseInt(adminId, 10);
+  if (isNaN(id)) {
+    throw new BadRequestException('adminId must be a number');
   }
+  console.log(`Received adminId: ${adminId}`);
+  return this.userService.findManagersByAdminId(id);
+}
+
 
   @Get()
   async findAll() {
     return this.userService.findAll();
+  }
+
+  @Get('all')
+  async findAssociateUsersByAdmin(@User() user: any) {
+    if (user.usertype !== 'ADMIN') {
+      throw new UnauthorizedException(
+        'You do not have permission to access this resource.',
+      );
+    }
+
+    try {
+      // Fetch the users associated with the logged-in admin
+      const users = await this.userService.findUsersByAdminId(user.id);
+      return users;
+    } catch (error) {
+      console.error('Error fetching users for admin:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch users for admin.',
+      );
+    }
+  }
+
+
+  @Get('ad') // HTTP GET method
+    async getUsersByAdminId(@Query('adminId') adminId: string): Promise<User[]> {
+        // Convert adminId to a number
+        const parsedAdminId = parseInt(adminId, 10);
+        if (isNaN(parsedAdminId)) {
+            throw new BadRequestException('Invalid adminId'); // Handle invalid number
+        }
+        return await this.userService.findUsersByAdminId(parsedAdminId);
+    }
+  
+  
+
+  @Get('executives')
+  async findExecutivesByManager(@Query('managerId') managerId: string) {
+    // Check if managerId is provided
+    if (!managerId || managerId.trim() === '') {
+      throw new BadRequestException('Manager ID is required');
+    }
+
+    // Convert managerId to a number
+    const managerIdNumber = parseInt(managerId.trim(), 10);
+
+    // Validate if managerId is a number and is greater than 0
+    if (isNaN(managerIdNumber) || managerIdNumber <= 0) {
+      throw new BadRequestException('Invalid manager ID format');
+    }
+
+    try {
+      const executives =
+        await this.userService.findExecutivesByManager(managerIdNumber);
+      return executives;
+    } catch (error) {
+      console.error('Error fetching executives:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while fetching executives',
+      );
+    }
   }
 
   @Get('managers')
@@ -48,8 +166,6 @@ export class UserController {
       throw new InternalServerErrorException('Failed to fetch managers.');
     }
   }
-
-  
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -85,36 +201,6 @@ export class UserController {
     }
   }
 
- 
-  // @Get('executives')
-  // async findExecutivesByManager(@Query('managerId') managerId: string) {
-  //   console.log('Received managerId:', managerId); // Log the raw input
-
-  //   // Check if managerId is provided
-  //   if (!managerId || managerId.trim() === '') {
-  //     throw new BadRequestException('Manager ID is required');
-  //   }
-
-  //   // Convert managerId to a number
-  //   const managerIdNumber = parseInt(managerId.trim(), 10);
-  //   console.log('Parsed managerId as:', managerIdNumber); // Log parsed value
-
-  //   // Validate if managerId is a number and is greater than 0
-  //   if (isNaN(managerIdNumber) || managerIdNumber <= 0) {
-  //     throw new BadRequestException('Invalid manager ID format');
-  //   }
-
-  //   try {
-  //     const executives = await this.userService.findExecutivesByManager(managerIdNumber);
-  //     console.log('Fetched executives:', executives); // Log the fetched executives
-  //     return executives; // Return the fetched executives
-  //   } catch (error) {
-  //     console.error('Error fetching executives:', error);
-  //     throw new InternalServerErrorException('An error occurred while fetching executives');
-  //   }
-  // }
-  
-
   @Patch(':id/change-password')
   async changePassword(
     @Param('id') id: string,
@@ -125,25 +211,12 @@ export class UserController {
       throw new BadRequestException('Invalid user ID');
     }
 
-    return this.authService.changePassword(userId, changePasswordDto.newPassword, changePasswordDto.confirmPassword);
+    return this.authService.changePassword(
+      userId,
+      changePasswordDto.newPassword,
+      changePasswordDto.confirmPassword,
+    );
   }
 
-
-  @Post('exe')
-  async createExecutive(
-    @Body() createExecutiveDto: CreateUserDto,
-    @User() user: any,
-  ) {
-    // Add managerId to the DTO
-    createExecutiveDto.managerId = user.id;
-    try {
-      return await this.userService.createUser(createExecutiveDto, createExecutiveDto.managerId);
-    } catch (error) {
-      console.error('Error creating executive:', error);
-      throw new InternalServerErrorException('Failed to create executive.');
-    }
-  }
   
-
-
-}  
+}

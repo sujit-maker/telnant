@@ -7,12 +7,11 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TaskService {
   constructor(private prisma: PrismaService) {}
 
-  // Create a new task
   async create(createTaskDto: CreateTaskDto) {
     const { customerName, siteName, serviceName, description, date, remark, serviceType } = createTaskDto;
 
     const customer = await this.prisma.customer.findUnique({ where: { customerName } });
-    const site = await this.prisma.site.findFirst({ where: { siteName } }); // Use findFirst for non-unique fields
+    const site = await this.prisma.site.findFirst({ where: { siteName } }); 
     const service = await this.prisma.service.findUnique({ where: { serviceName } });
 
     if (!customer || !site || !service) {
@@ -63,7 +62,6 @@ export class TaskService {
   async update(id: number, updateTaskDto: UpdateTaskDto) {
     const { customerName, siteName, serviceName, description, date, remark, serviceType } = updateTaskDto;
 
-    // Ensure `id` is a number
     const taskId = Number(id);
     if (isNaN(taskId)) {
       throw new NotFoundException(`Invalid ID: ${id}`);

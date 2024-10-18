@@ -9,23 +9,18 @@ export class ServicesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
-    // Fetch the last created service to get its serviceId
     const lastService = await this.prisma.service.findFirst({
       orderBy: {
         id: 'desc', 
       },
     });
 
-    // Initialize default serviceId for the first entry
     let newServiceId = 'ENPL-SR-01'; 
 
-    // If a previous service exists, calculate the next serviceId
     if (lastService && lastService.serviceId) {
       try {
-        // Extract the last number from the previous serviceId
         const lastServiceNumber = parseInt(lastService.serviceId.split('-').pop() || '0', 10);
         
-        // Increment the number and format it to two digits
         const nextServiceNumber = lastServiceNumber + 1;
         newServiceId = `ENPL-SR-${String(nextServiceNumber).padStart(2, '0')}`;
       } catch (error) {
@@ -34,10 +29,9 @@ export class ServicesService {
       }
     }
 
-    // Create the new service with the generated serviceId
     return this.prisma.service.create({
       data: {
-        serviceId: newServiceId, // Auto-generated service ID
+        serviceId: newServiceId, 
         serviceName: createServiceDto.serviceName,
         description: createServiceDto.description,
       },
@@ -61,7 +55,6 @@ export class ServicesService {
       data: updateServiceDto,
     });
   }
-  
   
 
   async remove(id: number) {

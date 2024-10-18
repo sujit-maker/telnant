@@ -67,7 +67,9 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
       <Dialog
         as="div"
         onClose={onClose}
-        className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50"
+        className="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50 z-[9999]" // Updated to z-[9999] for even higher z-index
+        aria-labelledby="create-user-title"
+        aria-describedby="create-user-description"
       >
         <Dialog.Panel className="max-w-sm w-full bg-white rounded-lg shadow-lg p-6">
           <Dialog.Title className="text-xl font-semibold mb-4">Create User</Dialog.Title>

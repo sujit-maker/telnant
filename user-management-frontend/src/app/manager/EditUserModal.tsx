@@ -41,21 +41,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onUserUpdated, clos
   };
 
   return (
-    <div className="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="modal-content bg-white p-6 rounded-lg shadow-lg">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm sm:w-96">
         <h2 className="text-xl font-semibold mb-4">Edit User</h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-700">Username:</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="w-full border rounded p-2 mt-1"
-            />
-          </div>
           <div className="mb-4">
             <label htmlFor="password" className="block text-gray-700">Password:</label>
             <input
@@ -67,20 +56,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onUserUpdated, clos
               className="w-full border rounded p-2 mt-1"
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="usertype" className="block text-gray-700">User Type:</label>
-            <select
-              id="usertype"
-              value={usertype}
-              onChange={(e) => setUsertype(e.target.value)}
-              required
-              className="w-full border rounded p-2 mt-1"
-            >
-              <option value="ADMIN">Admin</option>
-              <option value="MANAGER">Manager</option>
-              <option value="EXECUTIVE">Executive</option>
-            </select>
-          </div>
+         
 
           <button
             type="submit"

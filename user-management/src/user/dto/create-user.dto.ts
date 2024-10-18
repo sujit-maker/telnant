@@ -17,6 +17,6 @@ export class CreateUserDto {
   @IsOptional()
   managerId?: number;
 
-  @IsOptional() 
+  @IsOptional()   
   adminId?: number;
 }

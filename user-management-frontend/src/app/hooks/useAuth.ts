@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; 
-import { loginUser, changeUserPassword } from '../services/authService'; 
-
-export const useAuth = () => {
+  "use client"
+  import { useState, useEffect } from 'react';
+  import { useRouter } from 'next/navigation'; 
+  import { loginUser, changeUserPassword } from '../authservice/authService'; 
+  
+  export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUserType, setCurrentUserType] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [managerId, setManagerId] = useState<string | null>(null);
-  const [adminId, setAdminId] = useState<string | null>(null); // New state for ADMIN ID
+  const [adminId, setAdminId] = useState<string | null>(null); 
   const router = useRouter();
 
-  // Fetch userId, managerId, and adminId from localStorage on component mount
+  // Fetch userId, managerId, and adminId from localStorage 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUserId = localStorage.getItem('userId');
@@ -37,7 +38,6 @@ export const useAuth = () => {
         const idToStore = usertype === 'MANAGER' ? id : id; 
         setManagerId(usertype === 'MANAGER' ? idToStore : null);
         setAdminId(usertype === 'ADMIN' ? idToStore : null); 
-        alert(`Logged in as ${usertype}. Your ID is: ${id}`);
       }
 
       localStorage.setItem('access_token', access_token);
@@ -45,7 +45,6 @@ export const useAuth = () => {
       localStorage.setItem('managerId', usertype === 'MANAGER' ? id : null);
       localStorage.setItem('adminId', usertype === 'ADMIN' ? id : null); 
 
-      // Redirect based on user type
       switch (usertype) {
         case 'ADMIN':
           router.push('/admin');
@@ -79,8 +78,9 @@ export const useAuth = () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('managerId');
     localStorage.removeItem('adminId'); 
-    router.push('/login');
+    router.push('/');
   };
+
 
   // Change Password function
   const changePassword = async (newPassword: string, confirmPassword: string) => {
@@ -104,5 +104,5 @@ export const useAuth = () => {
     }
   };
   
-  return { login, loading, error, currentUserType, logout, userId, managerId, adminId, changePassword }; // Include adminId
+  return { login, loading, error, currentUserType, logout, userId, managerId, adminId, changePassword };
 };

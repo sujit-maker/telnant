@@ -54,8 +54,9 @@ const Header: React.FC = () => {
           />
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-600 transition-all"
+            className=" text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-600 bg-red-500  transition-all"
             aria-label="Logout"
+            style={{width:"90px",marginRight:"20px"}}
           >
             <HiLogout size={24} className="mr-2" />
             Logout
@@ -64,8 +65,8 @@ const Header: React.FC = () => {
       </header>
 
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto transform transition-transform duration-300 ease-in-out">
+       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm sm:w-96">
             <h2 className="text-xl font-bold mb-4 text-center">Change Password</h2>
             {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
             {successMessage && <div className="text-green-500 mb-4">{successMessage}</div>}
