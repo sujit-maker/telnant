@@ -56,7 +56,7 @@
           router.push('/manager');
           break;
         case 'SUPERADMIN':
-          router.push('/super');
+          router.push('/superAdmin');
           break;
         default:
           throw new Error('Invalid usertype');
